@@ -65,9 +65,10 @@ private fun Top_Blue() {
             .background(Color.White),
             verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Text(text = "\n Route Tracker \n                        ",color=Color.White,fontSize=40.sp
+        Text(text = "\n Route Tracker                                   ",color=Color.White,fontSize=40.sp
             ,fontWeight = FontWeight.Bold,fontFamily = FontFamily.Monospace, modifier = Modifier.background(color= Color.Blue))
     }
+    Spacer(modifier = Modifier.height(20.dp))
 }
 
 @Preview(showBackground = true)
@@ -82,14 +83,15 @@ fun GreetingPreview() {
 @Composable
 fun JourneyApp() {
     var progress by remember { mutableStateOf(0.0f) }
-    val maxProgress = 90.0f 
+    val maxProgress = 90.0f
     val step = 10.0f 
     var stop by remember { mutableStateOf(1) }
     var nextstop by remember { mutableStateOf(2) }
-    var unit by remember { mutableStateOf("Kiolmetres") }
+    var unit by remember { mutableStateOf("Kilometres") }
     var scal by remember { mutableStateOf(10.0f) }
     var cov=((stop-1)*scal).roundToInt()
     val remaining=(max(0.0f,(10-stop)*scal)).roundToInt()
+    Spacer(modifier = Modifier.height(20.dp))
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -132,7 +134,7 @@ fun JourneyApp() {
                 Text(text = "2      ")
                 Text(text = "3      ")
                 Text(text = "4      ")
-                Text(text = "5       ")
+                Text(text = "5      ")
                 Text(text = "6      ")
                 Text(text = "7      ")
                 Text(text = "8      ")
@@ -174,11 +176,39 @@ fun JourneyApp() {
         ) {
             Text(text = " Location: Stop $stop \n", color = Color.Black, fontSize = 30.sp,fontFamily = FontFamily.Monospace)
             Text(text = " Next: Stop $nextstop \n", color = Color.Black, fontSize = 30.sp,fontFamily = FontFamily.Monospace)
-                Text(text = " Remaining Dist: $remaining  \n", color = Color.Black, fontSize = 30.sp,fontFamily = FontFamily.Monospace)
+            if(remaining!=0) {
+                Text(
+                    text = " Remaining Dist: $remaining  \n",
+                    color = Color.Black,
+                    fontSize = 30.sp,
+                    fontFamily = FontFamily.Monospace
+                )
+            }
+            else{
+                Text(
+                    text = " Remaining Dist: N.A.  \n",
+                    color = Color.Black,
+                    fontSize = 30.sp,
+                    fontFamily = FontFamily.Monospace
+                )
+            }
             Text(text = " Dist. Covered: $cov \n", color = Color.Black, fontSize = 30.sp,fontFamily = FontFamily.Monospace)
             //remaining distance till stop 10
             // dist covered till inf
         }
+        Spacer(modifier = Modifier.height(5.dp))
+        Button(
+            onClick = {
+                stop=1
+                nextstop=2
+                progress=0.0f
+                scal=10.0f
+                unit="Kilometres"
+            }
+        ) {
+            Text("Reset")
+        }
+
     }
 }
 
