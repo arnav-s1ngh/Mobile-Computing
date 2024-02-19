@@ -4,3 +4,4 @@
 4. also, the stage_left var indicates the distance till stage 10 in stages inclusive of [1,10], it stops at 0 after the user's supposed to shift to the lazy column, where there's no need to establish an upper limit, thus reducing its meaning to moot
 5. the lazy list is originally restricted to 10 stages but can increase should the user decide to move further or whatever
 6. there's 2 main functions, top_blue for, as the name suggests, the bg color and title at the top of the app, and journey_app for the rest
+7. also, added a reset button to, well, reset the sys_vars
