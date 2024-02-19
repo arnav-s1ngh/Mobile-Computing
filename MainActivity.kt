@@ -60,18 +60,18 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
+// upper blue portion, displays the app name
 @Composable
 private fun Top_Blue() {
     Column(
         modifier = Modifier
             .background(Color.White),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        Text(text = "Route Tracker                                   ",color=Color.White,fontSize=40.sp
+        Text(text = "Route Tracker                              ",color=Color.White,fontSize=30.sp
             ,fontWeight = FontWeight.Bold,fontFamily = FontFamily.Monospace, modifier = Modifier.background(color= Color.Blue))
     }
-    Spacer(modifier = Modifier.height(20.dp))
+    Spacer(modifier = Modifier.height(100.dp))
 }
 
 @Preview(showBackground = true)
@@ -86,8 +86,8 @@ fun GreetingPreview() {
 @Composable
 fun JourneyApp() {
     var progress by remember { mutableStateOf(0.0f) }
-    val maxProgress = 90.0f
-    val step = 10.0f
+    val maxprogress = 90.0f
+    val increment = 10.0f
     var stop by remember { mutableStateOf(1) }
     var nextstop by remember { mutableStateOf(2) }
     var unit by remember { mutableStateOf("Kilometres") }
@@ -95,6 +95,18 @@ fun JourneyApp() {
     var cov=((stop-1)*scal).roundToInt()
     val remaining=(max(0.0f,(10-stop)*scal)).roundToInt()
     var set_size=10
+    var u1=((stop-1)*scal).roundToInt()
+    var u2=((stop-2)*scal).roundToInt()
+    var u3=((stop-3)*scal).roundToInt()
+    var u4=((stop-4)*scal).roundToInt()
+    var u5=((stop-5)*scal).roundToInt()
+    var u6=((stop-6)*scal).roundToInt()
+    var u7=((stop-7)*scal).roundToInt()
+    var u8=((stop-8)*scal).roundToInt()
+    var u9=((stop-9)*scal).roundToInt()
+    var u10=((stop-10)*scal).roundToInt()
+
+
     Spacer(modifier = Modifier.height(20.dp))
 
     Column(
@@ -119,7 +131,7 @@ fun JourneyApp() {
         }
         Spacer(modifier = Modifier.height(16.dp))
         LinearProgressIndicator(
-            progress = progress / maxProgress,
+            progress = progress / maxprogress,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(24.dp)
@@ -136,24 +148,45 @@ fun JourneyApp() {
         )
         {
             //space so as to fit row with lin. prog indicator
-            Text(text = "1",fontSize = set_size.sp)
-            Text(text = "2",fontSize = set_size.sp)
-            Text(text = "3",fontSize = set_size.sp)
-            Text(text = "4",fontSize = set_size.sp)
-            Text(text = "5",fontSize = set_size.sp)
-            Text(text = "6",fontSize = set_size.sp)
-            Text(text = "7",fontSize = set_size.sp)
-            Text(text = "8",fontSize = set_size.sp)
-            Text(text = "9",fontSize = set_size.sp)
-            Text(text = "10",fontSize = set_size.sp)
+            Text(text = "1",fontSize = set_size.sp,color = Color.Black)
+            Text(text = "2",fontSize = set_size.sp,color = Color.Black)
+            Text(text = "3",fontSize = set_size.sp,color = Color.Black)
+            Text(text = "4",fontSize = set_size.sp,color = Color.Black)
+            Text(text = "5",fontSize = set_size.sp,color = Color.Black)
+            Text(text = "6",fontSize = set_size.sp,color = Color.Black)
+            Text(text = "7",fontSize = set_size.sp,color = Color.Black)
+            Text(text = "8",fontSize = set_size.sp,color = Color.Black)
+            Text(text = "9",fontSize = set_size.sp,color = Color.Black)
+            Text(text = "10",fontSize = set_size.sp,color = Color.Black)
 
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(5.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(24.dp)
+                .padding(horizontal = 2.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ){
+            Text(text ="$u1",fontSize = 6.sp,color = Color.Black)
+            Text(text ="$u2",fontSize = 6.sp,color = Color.Black)
+            Text(text ="$u3",fontSize = 6.sp,color = Color.Black)
+            Text(text ="$u4",fontSize = 6.sp,color = Color.Black)
+            Text(text ="$u5",fontSize = 6.sp,color = Color.Black)
+            Text(text ="$u6",fontSize = 6.sp,color = Color.Black)
+            Text(text ="$u7",fontSize = 6.sp,color = Color.Black)
+            Text(text ="$u8",fontSize = 6.sp,color = Color.Black)
+            Text(text ="$u9",fontSize = 6.sp,color = Color.Black)
+            Text(text ="$u10",fontSize = 6.sp,color = Color.Black)
+
+        }
+        // function to change progress
+        Spacer(modifier = Modifier.height(1.dp))
         Button(
             onClick = {
-                progress+=step
-                if (progress>=maxProgress) {
-                    progress=maxProgress
+                progress+=increment
+                if (progress>=maxprogress) {
+                    progress=maxprogress
                 }
                 stop+=1
                 nextstop+=1
@@ -180,11 +213,11 @@ fun JourneyApp() {
             horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.SpaceEvenly
         ) {
-            Text(text = " Location: Stop $stop \n", color = Color.Black, fontSize = 30.sp,fontFamily = FontFamily.Monospace)
-            Text(text = " Next: Stop $nextstop \n", color = Color.Black, fontSize = 30.sp,fontFamily = FontFamily.Monospace)
+            Text(text = " Current: Stop$stop \n", color = Color.Black, fontSize = 30.sp,fontFamily = FontFamily.Monospace)
+            Text(text = " Next: Stop$nextstop \n", color = Color.Black, fontSize = 30.sp,fontFamily = FontFamily.Monospace)
             if(remaining!=0) {
                 Text(
-                    text = " Remaining Dist: $remaining  \n",
+                    text = " Remaining Dist:$remaining  \n",
                     color = Color.Black,
                     fontSize = 30.sp,
                     fontFamily = FontFamily.Monospace
@@ -198,12 +231,11 @@ fun JourneyApp() {
                     fontFamily = FontFamily.Monospace
                 )
             }
-            Text(text = " Dist. Covered: $cov \n", color = Color.Black, fontSize = 30.sp,fontFamily = FontFamily.Monospace)
-            Text(text=" Dist. till Next:10",color = Color.Black, fontSize = 30.sp,fontFamily = FontFamily.Monospace)
+            Text(text = " Dist. Covered:$cov \n", color = Color.Black, fontSize = 30.sp,fontFamily = FontFamily.Monospace)
+
             //remaining distance till stop 10
             // dist covered till inf
         }
-        Spacer(modifier = Modifier.height(5.dp))
         Button(
             onClick = {
                 stop=1
