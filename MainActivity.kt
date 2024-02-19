@@ -84,13 +84,14 @@ fun GreetingPreview() {
 fun JourneyApp() {
     var progress by remember { mutableStateOf(0.0f) }
     val maxProgress = 90.0f
-    val step = 10.0f 
+    val step = 10.0f
     var stop by remember { mutableStateOf(1) }
     var nextstop by remember { mutableStateOf(2) }
     var unit by remember { mutableStateOf("Kilometres") }
     var scal by remember { mutableStateOf(10.0f) }
     var cov=((stop-1)*scal).roundToInt()
     val remaining=(max(0.0f,(10-stop)*scal)).roundToInt()
+    var set_size=10
     Spacer(modifier = Modifier.height(20.dp))
 
     Column(
@@ -130,16 +131,16 @@ fun JourneyApp() {
         )
             {
             //space so as to fit row with lin. prog indicator
-                Text(text = "1      ")
-                Text(text = "2      ")
-                Text(text = "3      ")
-                Text(text = "4      ")
-                Text(text = "5      ")
-                Text(text = "6      ")
-                Text(text = "7      ")
-                Text(text = "8      ")
-                Text(text = "9      ")
-                Text(text = "10")
+                Text(text = "1           ",fontSize = set_size.sp)
+                Text(text = "2           ",fontSize = set_size.sp)
+                Text(text = "3           ",fontSize = set_size.sp)
+                Text(text = "4           ",fontSize = set_size.sp)
+                Text(text = "5           ",fontSize = set_size.sp)
+                Text(text = "6           ",fontSize = set_size.sp)
+                Text(text = "7           ",fontSize = set_size.sp)
+                Text(text = "8           ",fontSize = set_size.sp)
+                Text(text = "9      ",fontSize = set_size.sp)
+                Text(text = "10",fontSize = set_size.sp)
 
             }
         Spacer(modifier = Modifier.height(16.dp))
