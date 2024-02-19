@@ -5,3 +5,4 @@
 5. the lazy list is originally restricted to 10 stages but can increase should the user decide to move further or whatever
 6. there's 2 main functions, top_blue for, as the name suggests, the bg color and title at the top of the app, and journey_app for the rest
 7. also, added a reset button to, well, reset the sys_vars
+8. also, note, the prog bar might stop, but since there's also a lazy row, it can expand from the original 10, should said change be deemed necessary by the user. the rem_distance turn n.a. after stop 10, cause the term 'remaining distance' makes no sense then, so its value turns to N.A., Not Applicable
