@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -30,6 +31,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Red
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,7 +41,7 @@ import androidx.compose.ui.unit.sp
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import kotlin.math.max
 import kotlin.math.roundToInt
-
+import android.util.DisplayMetrics
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,9 +66,9 @@ private fun Top_Blue() {
     Column(
         modifier = Modifier
             .background(Color.White),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Text(text = "\n Route Tracker                                   ",color=Color.White,fontSize=40.sp
+        Text(text = "Route Tracker                                   ",color=Color.White,fontSize=40.sp
             ,fontWeight = FontWeight.Bold,fontFamily = FontFamily.Monospace, modifier = Modifier.background(color= Color.Blue))
     }
     Spacer(modifier = Modifier.height(20.dp))
@@ -120,29 +123,31 @@ fun JourneyApp() {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(24.dp)
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 2.dp)
+
         )
         Spacer(modifier = Modifier.height(5.dp))
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(24.dp)
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 2.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
         )
-            {
+        {
             //space so as to fit row with lin. prog indicator
-                Text(text = "1           ",fontSize = set_size.sp)
-                Text(text = "2           ",fontSize = set_size.sp)
-                Text(text = "3           ",fontSize = set_size.sp)
-                Text(text = "4           ",fontSize = set_size.sp)
-                Text(text = "5           ",fontSize = set_size.sp)
-                Text(text = "6           ",fontSize = set_size.sp)
-                Text(text = "7           ",fontSize = set_size.sp)
-                Text(text = "8           ",fontSize = set_size.sp)
-                Text(text = "9      ",fontSize = set_size.sp)
-                Text(text = "10",fontSize = set_size.sp)
+            Text(text = "1",fontSize = set_size.sp)
+            Text(text = "2",fontSize = set_size.sp)
+            Text(text = "3",fontSize = set_size.sp)
+            Text(text = "4",fontSize = set_size.sp)
+            Text(text = "5",fontSize = set_size.sp)
+            Text(text = "6",fontSize = set_size.sp)
+            Text(text = "7",fontSize = set_size.sp)
+            Text(text = "8",fontSize = set_size.sp)
+            Text(text = "9",fontSize = set_size.sp)
+            Text(text = "10",fontSize = set_size.sp)
 
-            }
+        }
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = {
@@ -154,7 +159,7 @@ fun JourneyApp() {
                 nextstop+=1
             }
         ) {
-            Text("Next Station")
+            Text("Next Stop")
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -194,6 +199,7 @@ fun JourneyApp() {
                 )
             }
             Text(text = " Dist. Covered: $cov \n", color = Color.Black, fontSize = 30.sp,fontFamily = FontFamily.Monospace)
+            Text(text=" Dist. till Next:10",color = Color.Black, fontSize = 30.sp,fontFamily = FontFamily.Monospace)
             //remaining distance till stop 10
             // dist covered till inf
         }
