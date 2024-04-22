@@ -1,257 +1,159 @@
 package com.example.myapplication
 
+import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.os.Bundle
-import android.widget.ProgressBar
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.Red
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.myapplication.ui.theme.MyApplicationTheme
-import kotlin.math.max
-import kotlin.math.roundToInt
-import android.util.DisplayMetrics
-class MainActivity : ComponentActivity() {
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import java.io.File
+import java.util.concurrent.TimeUnit
+
+
+
+
+class MainActivity : ComponentActivity(), SensorEventListener {
+    private lateinit var sensorManager: SensorManager
+    private var accelerometer: Sensor? = null
+    private lateinit var viewModel: OrientationViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        viewModel = ViewModelProvider(this, OrientationViewModelFactory(this)).get(OrientationViewModel::class.java)
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         setContent {
-            MyApplicationTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    Top_Blue()
-                    JourneyApp()
+            MyApp(viewModel)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        accelerometer?.also { sensor ->
+            sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        sensorManager.unregisterListener(this)
+    }
+
+    override fun onSensorChanged(event: SensorEvent?) {
+        if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
+            val x = event.values[0]
+            val y = event.values[1]
+            val z = event.values[2]
+            val timestamp = System.currentTimeMillis()
+            viewModel.insertOrientationData(x, y, z, timestamp)
+        }
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+}
+
+@Composable
+fun MyApp(viewModel: OrientationViewModel) {
+    val orientationData by viewModel.orientationData.collectAsStateWithLifecycle()
+    val predictedData by viewModel.predictedData.collectAsStateWithLifecycle()
+
+    MaterialTheme {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            Column {
+                Text(text = "Current Orientation:")
+                Text(text = "X: ${orientationData?.x ?: ""}")
+                Text(text = "Y: ${orientationData?.y ?: ""}")
+                Text(text = "Z: ${orientationData?.z ?: ""}")
+
+                Text(text = "Predicted Orientation (10s):")
+                predictedData?.let {
+                    for (data in it) {
+                        Text(text = "X: ${data.x}, Y: ${data.y}, Z: ${data.z}")
+                    }
                 }
-
-
             }
         }
     }
 }
-// upper blue portion, displays the app name
-@Composable
-private fun Top_Blue() {
-    Column(
-        modifier = Modifier
-            .background(Color.White),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
-    ) {
-        Text(text = "Route Tracker                              ",color=Color.White,fontSize=30.sp
-            ,fontWeight = FontWeight.Bold,fontFamily = FontFamily.Monospace, modifier = Modifier.background(color= Color.Blue))
-    }
-    Spacer(modifier = Modifier.height(100.dp))
-}
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    MyApplicationTheme {
-        Top_Blue()
+class OrientationViewModel(private val repository: OrientationRepository) : ViewModel() {
+    private val _orientationData = MutableStateFlow<orientationdataentity?>(null)
+    val orientationData: StateFlow<orientationdataentity?> = _orientationData
+
+    private val _predictedData = MutableStateFlow<List<orientationdataentity>?>(null)
+    val predictedData: StateFlow<List<orientationdataentity>?> = _predictedData
+
+    fun insertOrientationData(x: Float, y: Float, z: Float, timestamp: Long) {
+        viewModelScope.launch {
+            repository.insertOrientationData(orientationdataentity(x = x, y = y, z = z, timestamp = timestamp))
+            _orientationData.value = orientationdataentity(x = x, y = y, z = z, timestamp = timestamp)
+        }
     }
 
-}
-
-@Composable
-fun JourneyApp() {
-    var progress by remember { mutableStateOf(0.0f) }
-    val maxprogress = 90.0f
-    val increment = 10.0f
-    var stop by remember { mutableStateOf(1) }
-    var nextstop by remember { mutableStateOf(2) }
-    var unit by remember { mutableStateOf("Kilometres") }
-    var scal by remember { mutableStateOf(10.0f) }
-    var cov=((stop-1)*scal).roundToInt()
-    val remaining=(max(0.0f,(10-stop)*scal)).roundToInt()
-    var set_size=10
-    var u1=((stop-1)*scal).roundToInt()
-    var u2=((stop-2)*scal).roundToInt()
-    var u3=((stop-3)*scal).roundToInt()
-    var u4=((stop-4)*scal).roundToInt()
-    var u5=((stop-5)*scal).roundToInt()
-    var u6=((stop-6)*scal).roundToInt()
-    var u7=((stop-7)*scal).roundToInt()
-    var u8=((stop-8)*scal).roundToInt()
-    var u9=((stop-9)*scal).roundToInt()
-    var u10=((stop-10)*scal).roundToInt()
-
-
-    Spacer(modifier = Modifier.height(20.dp))
-
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-
-    ) {
-        Button(
-            onClick = {
-                if(unit=="Kilometres") {
-                    unit="Miles"
-                    scal=6.20f
-                }
-                else{
-                    unit="Kilometres"
-                    scal=10.0f
-                }
-            }
-        ) {
-            Text("The current unit is $unit")
+    init {
+        viewModelScope.launch {
+            _predictedData.value = repository.getPredictedData()
         }
-        Spacer(modifier = Modifier.height(16.dp))
-        LinearProgressIndicator(
-            progress = progress / maxprogress,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(24.dp)
-                .padding(horizontal = 2.dp)
-
-        )
-        Spacer(modifier = Modifier.height(5.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(24.dp)
-                .padding(horizontal = 2.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        )
-        {
-            //space so as to fit row with lin. prog indicator
-            Text(text = "1",fontSize = set_size.sp,color = Color.Black)
-            Text(text = "2",fontSize = set_size.sp,color = Color.Black)
-            Text(text = "3",fontSize = set_size.sp,color = Color.Black)
-            Text(text = "4",fontSize = set_size.sp,color = Color.Black)
-            Text(text = "5",fontSize = set_size.sp,color = Color.Black)
-            Text(text = "6",fontSize = set_size.sp,color = Color.Black)
-            Text(text = "7",fontSize = set_size.sp,color = Color.Black)
-            Text(text = "8",fontSize = set_size.sp,color = Color.Black)
-            Text(text = "9",fontSize = set_size.sp,color = Color.Black)
-            Text(text = "10",fontSize = set_size.sp,color = Color.Black)
-
-        }
-        Spacer(modifier = Modifier.height(5.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(24.dp)
-                .padding(horizontal = 2.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ){
-            Text(text ="$u1",fontSize = 6.sp,color = Color.Black)
-            Text(text ="$u2",fontSize = 6.sp,color = Color.Black)
-            Text(text ="$u3",fontSize = 6.sp,color = Color.Black)
-            Text(text ="$u4",fontSize = 6.sp,color = Color.Black)
-            Text(text ="$u5",fontSize = 6.sp,color = Color.Black)
-            Text(text ="$u6",fontSize = 6.sp,color = Color.Black)
-            Text(text ="$u7",fontSize = 6.sp,color = Color.Black)
-            Text(text ="$u8",fontSize = 6.sp,color = Color.Black)
-            Text(text ="$u9",fontSize = 6.sp,color = Color.Black)
-            Text(text ="$u10",fontSize = 6.sp,color = Color.Black)
-
-        }
-        // function to change progress
-        Spacer(modifier = Modifier.height(1.dp))
-        Button(
-            onClick = {
-                progress+=increment
-                if (progress>=maxprogress) {
-                    progress=maxprogress
-                }
-                stop+=1
-                nextstop+=1
-            }
-        ) {
-            Text("Next Stop")
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // if stops>10
-        LazyRow(
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .background(Color.Gray)
-        ) {
-            items((1..max(10,stop)).toList()) { stop ->
-                StopItem(stop = "Stop $stop")
-            }
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Column(
-            horizontalAlignment = Alignment.Start,
-            verticalArrangement = Arrangement.SpaceEvenly
-        ) {
-            Text(text = " Current: Stop$stop \n", color = Color.Black, fontSize = 30.sp,fontFamily = FontFamily.Monospace)
-            Text(text = " Next: Stop$nextstop \n", color = Color.Black, fontSize = 30.sp,fontFamily = FontFamily.Monospace)
-            if(remaining!=0) {
-                Text(
-                    text = " Remaining Dist:$remaining  \n",
-                    color = Color.Black,
-                    fontSize = 30.sp,
-                    fontFamily = FontFamily.Monospace
-                )
-            }
-            else{
-                Text(
-                    text = " Remaining Dist: N.A.  \n",
-                    color = Color.Black,
-                    fontSize = 30.sp,
-                    fontFamily = FontFamily.Monospace
-                )
-            }
-            Text(text = " Dist. Covered:$cov \n", color = Color.Black, fontSize = 30.sp,fontFamily = FontFamily.Monospace)
-
-            //remaining distance till stop 10
-            // dist covered till inf
-        }
-        Button(
-            onClick = {
-                stop=1
-                nextstop=2
-                progress=0.0f
-                scal=10.0f
-                unit="Kilometres"
-            }
-        ) {
-            Text("Reset")
-        }
-
     }
 }
 
-@Composable
-fun StopItem(stop: String) {
-    Text(text = stop, color = Color.Black, fontSize = 20.sp, modifier = Modifier.padding(horizontal = 8.dp))
+class OrientationRepository(
+    private val dao: orientationdaointerface,
+    private val context: Context
+) {
+    fun getOrientationData(): List<orientationdataentity> {
+        return dao.getAllData()
+    }
+
+    fun getPredictedData(): List<orientationdataentity> {
+        val file = File(context.filesDir, "orientation_data.txt")
+        return predictNextValues(file, 10)
+    }
+
+    suspend fun insertOrientationData(orientationData: orientationdataentity) {
+        dao.insert(orientationData)
+        saveDataToFile(orientationData, File(context.filesDir, "orientation_data.txt"))
+    }
+
+    private fun predictNextValues(file: File, numValues: Int): List<orientationdataentity> {
+        // Implement your time series prediction logic here
+        // This is just a dummy implementation that returns the same values
+        val lastData = dao.getAllData().lastOrNull() ?: return emptyList()
+        return List(numValues) { orientationdataentity(x = lastData.x, y = lastData.y, z = lastData.z, timestamp = lastData.timestamp + TimeUnit.SECONDS.toMillis(it.toLong())) }
+    }
+
+    private fun saveDataToFile(data: orientationdataentity, file: File) {
+        file.appendText("${data.x},${data.y},${data.z},${data.timestamp}\n")
+    }
+}
+
+class OrientationViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(OrientationViewModel::class.java)) {
+            val dao = dborientation.getInstance(context).orientationdaointerface()
+            val repository = OrientationRepository(dao, context)
+            @Suppress("UNCHECKED_CAST")
+            return OrientationViewModel(repository) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
 }
