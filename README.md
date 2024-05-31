@@ -1,4 +1,5 @@
 Assignment-2: Readme File
+
 Simple Weather App; Fetches Max and Min temp for the selected latitude and longitude from the Open Weather API. Stores said data in a database so as to fetch an average, should the device not be able to access said API
 
 **Citations**
